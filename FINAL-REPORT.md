@@ -149,3 +149,21 @@ The 5 FP16 wins: fp16_01 (Q4 drops 'lethal combat', hallucinates 'loại bỏ'),
 - **fp16_07 Q4 loop** is the scariest failure mode seen (degenerate repetition to the token cap). If the pipeline ever ships Q4, a repetition guard / max-token cap is mandatory.
 
 **Bottom line: keep Q4_K_M for speed, but do not claim it is quality-equal to FP16 — on hard murim lines it is measurably worse (5–0, 0 wins), and the base model itself is the bigger quality problem on both sides. Re-check after the r14 adapter is merged into GGUF.**
+
+## F16, zero-quant (user-ordered follow-up, 2026-11-21 19:52)
+
+Question: how much of the combo speed survives with ZERO quantization? Run **44906163199** (commit 54064de), job `bench (llama-fp16-noquant)` completed/success. F16 GGUF straight out of `convert_hf_to_gguf.py` (no `llama-quantize` step at all) + F16 KV cache (`--cache-type-k/v f16`), otherwise the exact round-3 combo flags (`-fa`, batch/ubatch 1024, `--cache-prompt --cache-reuse 256`). 3 standard images, same prompt, greedy, max 100 tokens, warmup + 3 timed runs, median. Result JSON: `results-fp16-noquant/artifacts/results-llama-fp16-noquant.json` (local only).
+
+| | F16 no-quant (llama.cpp) | Q4_K_M combo | FP16 eager |
+|---|---|---|---|
+| s/image (mean of per-image medians) | **0.91** (0.54 / 1.50 / 0.69) | 0.58 round 3 (0.46 on the 21-img set) | 2.57 (21-img) / 2.30 (3-img) |
+| tok/s (mean) | 20.4 | 31.5 | 7.7 |
+| load_s | 1.0 | 1.0 | 17.6 |
+| peak RSS | 2,049 MB | 1,304 MB | 2,582 MB |
+| runner CPU | AMD EPYC 7763 | EPYC 7763 (21-img set) | Xeon 6973P-C |
+
+**Verdict: yes, the combo speedups work without quantization.** F16-no-quant is **2.5–2.8× faster than FP16 eager** (0.91s vs 2.30/2.57s) and only **~1.6× slower than the Q4 combo** (0.91s vs 0.58s round 3; ~2× vs the 0.46s 21-image mean). Split the gain: the engine + flags are worth ~2.5× over eager; the Q4 quantization itself adds another ~1.6–2× on top. The F16 GGUF is ~1.6 GB on disk (vs 522 MB for Q4_K_M) and uses ~2.0 GB RSS (vs 1.3 GB Q4, 2.6 GB eager).
+
+Outputs are **verbatim-identical to FP16 eager on all 3 images** ("Anh ấy không tồn tại trong thế giới này." / "Vì vậy, bạn có thể sử dụng sức mạnh vô hạn của Tai Chi…" / "Tôi đã yêu thích bạn từ ngày chúng tôi lần đầu gặp.") — same weights, greedy, so this path loses nothing vs eager on these 3, unlike Q4 which lost 5–0 on the 21-image quality set. The per-image split shows where quant matters most: the 31-token img2 is 1.50s F16 vs 0.89s Q4 (decode-bound long output), while the 11-token img1 is 0.54s vs 0.35s.
+
+Caveats: 3 images, one run — runner noise ±1.5× applies, though the 2.5× gap over eager is outside it and the host (EPYC 7763) matches the Q4 21-image run. The quality side still rests on the 21-image FP16 section above; this run only proves speed + output identity on 3 images. The r14 adapter still needs merging before any of this is the shipped pipeline (OPEN item 1); re-check quality after the merge.
