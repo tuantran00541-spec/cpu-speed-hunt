@@ -82,14 +82,16 @@ optimum-cli export openvino \
   --weight-format int8 \
   ./ov_qwen3.5_0.8b_int8
 
-# INT4 — group-size 128 / ratio 1.0 match the official Qwen3.5 INT4
-# exports (INT4_ASYM, group_size 128, ratio 1.0, backup INT8_ASYM).
+# INT4 — group-size -1 (per-channel). --group-size 128 was the original
+# recipe but NNCF rejects it on this checkpoint (InvalidGroupSizeError:
+# rotary_emb MatMul channel size 1); the CLI has no
+# group-size-fallback-mode flag, so per-channel is the fix (run 1).
 optimum-cli export openvino \
   --model huihui-ai/Huihui-Qwen3.5-0.8B-abliterated \
   --task image-text-to-text \
   --trust-remote-code \
   --weight-format int4 \
-  --group-size 128 \
+  --group-size -1 \
   --ratio 1.0 \
   ./ov_qwen3.5_0.8b_int4
 ```

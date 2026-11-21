@@ -183,6 +183,8 @@ def generate(base_url: str, image_b64: str) -> tuple[str, int, dict]:
     if content is None:
         raise RuntimeError(f"server returned null content: {resp!r:.500}")
     content = str(content)
+    if not content.strip():
+        print(f"DEBUG: empty content, full response: {resp!r:.1500}", file=sys.stderr)
     usage = resp.get("usage") or {}
     tokens = usage.get("completion_tokens")
     if not isinstance(tokens, int):
@@ -266,7 +268,9 @@ def main(argv: list[str]) -> int:
                 # 1 untimed warmup generation (also warms the vision encoder).
                 w_text, w_tok, _ = generate(base_url, image_b64)
                 if not w_text.strip():
-                    print(f"FATAL: warmup generation for {img_path.name} returned empty output",
+                    log_f.flush()
+                    tail = "".join(log_path.read_text(encoding="utf-8", errors="replace").splitlines(keepends=True)[-40:])
+                    print(f"FATAL: warmup generation for {img_path.name} returned empty output\n--- server log tail ---\n{tail}",
                           file=sys.stderr)
                     return 1
                 runs_s: list[float] = []
@@ -277,7 +281,9 @@ def main(argv: list[str]) -> int:
                     text, tokens, timings = generate(base_url, image_b64)
                     dt = time.perf_counter() - t0
                     if not text.strip():
-                        print(f"FATAL: timed run {i+1} for {img_path.name} returned empty output",
+                        log_f.flush()
+                        tail = "".join(log_path.read_text(encoding="utf-8", errors="replace").splitlines(keepends=True)[-40:])
+                        print(f"FATAL: timed run {i+1} for {img_path.name} returned empty output\n--- server log tail ---\n{tail}",
                               file=sys.stderr)
                         return 1
                     runs_s.append(dt)

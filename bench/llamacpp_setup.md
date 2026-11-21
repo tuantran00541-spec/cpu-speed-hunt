@@ -169,7 +169,11 @@ records `load_s`, runs 1 warmup + 3 timed generations per image, stops the
 server, and writes its `results-*.json` in the repo root. Either driver
 exiting nonzero = the run failed; the server log
 (`llama-server-llama-cpp-q4km.log` / `llama-server-llama-cpp-combo.log`)
-holds the last lines of server output for diagnosis.
+holds the last lines of server output for diagnosis — and the workflow
+uploads it as an artifact. On an empty generation the driver now also
+prints the full chat-completions response plus the server log tail to
+stderr before failing (added after run 1, where both drivers died on an
+empty warmup with no diagnostic output).
 
 ## One-command recap (copy-paste, repo root)
 
