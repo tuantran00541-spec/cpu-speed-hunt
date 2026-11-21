@@ -1,0 +1,149 @@
+# CPU inference speedup hunt — Qwen3.5-0.8B vision (image in -> Vietnamese out)
+# Base model only: huihui-ai/Huihui-Qwen3.5-0.8B-abliterated (public HF, no token).
+# One job per runtime, free ubuntu-latest runners, all in parallel.
+# Each job writes results-<runtime>.json (same 3 images, same prompt,
+# greedy, max_new_tokens=100) and uploads it as an artifact.
+name: cpu-speed-hunt
+
+on:
+  workflow_dispatch:
+
+env:
+  HF_HUB_DISABLE_PROGRESS_BARS: "1"
+  PYTHONUNBUFFERED: "1"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime:
+          - pytorch-eager
+          - pytorch-compile
+          - pytorch-ipex
+          - pytorch-combo
+          - llama-cpp-q4km
+          - llama-cpp-combo
+          - openvino-int8
+          - openvino-int4
+          - openvino-combo
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Record runner CPU
+        run: |
+          { echo "## runner"; lscpu; echo; nproc; free -h; python3 --version; } | tee runner-info.txt
+
+      # ---------------- PyTorch family ----------------
+      - name: Install CPU torch 2.8.0
+        if: startsWith(matrix.runtime, 'pytorch-')
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "torch==2.8.0" --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Install transformers + helpers
+        if: startsWith(matrix.runtime, 'pytorch-')
+        run: python -m pip install "transformers>=5.2.0,<6" accelerate Pillow
+
+      - name: Install IPEX 2.8.0
+        if: matrix.runtime == 'pytorch-ipex' || matrix.runtime == 'pytorch-combo'
+        run: python -m pip install "intel-extension-for-pytorch==2.8.0" --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/cpu/us/
+
+      - name: Verify PyTorch versions
+        if: startsWith(matrix.runtime, 'pytorch-')
+        run: python -c "import torch, transformers; print('torch', torch.__version__); print('transformers', transformers.__version__); print('threads', torch.get_num_threads())"
+
+      # ---------------- llama.cpp family ----------------
+      - name: Clone + build llama.cpp (CPU)
+        if: startsWith(matrix.runtime, 'llama-')
+        run: |
+          git clone --depth 1 https://github.com/ggml-org/llama.cpp
+          cd llama.cpp && cmake -B build && cmake --build build --config Release -j "$(nproc)"
+          ls -lh build/bin/llama-server build/bin/llama-quantize
+          ./build/bin/llama-server --version
+
+      - name: Install llama.cpp convert deps
+        if: startsWith(matrix.runtime, 'llama-')
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r llama.cpp/requirements/requirements-convert_hf_to_gguf.txt
+          python -m pip install huggingface_hub
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install transformers Pillow
+
+      - name: Download base model
+        if: startsWith(matrix.runtime, 'llama-')
+        run: |
+          python3 -c "from huggingface_hub import snapshot_download; snapshot_download(repo_id='huihui-ai/Huihui-Qwen3.5-0.8B-abliterated', local_dir='hf-model')"
+          ls hf-model && du -sh hf-model
+
+      - name: Convert to GGUF (text F16 + mmproj F16)
+        if: startsWith(matrix.runtime, 'llama-')
+        run: |
+          cd llama.cpp
+          python3 convert_hf_to_gguf.py ../hf-model --outfile ../qwen3.5-0.8b-f16.gguf --outtype f16
+          python3 convert_hf_to_gguf.py ../hf-model --outfile ../mmproj-qwen3.5-0.8b-f16.gguf --outtype f16 --mmproj
+          cd ..
+          ls -lh qwen3.5-0.8b-f16.gguf mmproj-qwen3.5-0.8b-f16.gguf
+
+      - name: Quantize text model to Q4_K_M
+        if: startsWith(matrix.runtime, 'llama-')
+        run: |
+          ./llama.cpp/build/bin/llama-quantize qwen3.5-0.8b-f16.gguf qwen3.5-0.8b-q4_k_m.gguf Q4_K_M
+          ls -lh qwen3.5-0.8b-q4_k_m.gguf
+
+      # ---------------- OpenVINO family ----------------
+      - name: Install OpenVINO stack (pinned)
+        if: startsWith(matrix.runtime, 'openvino-')
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install "optimum-intel==2.2.0" "openvino==2026.4" "openvino-genai==2026.4" "openvino-tokenizers==2026.4" "nncf==3.4" "transformers==5.2.0" Pillow huggingface_hub
+          python -c "import optimum.intel, openvino, openvino_genai, nncf, transformers; print('imports ok')"
+
+      - name: Export OpenVINO IR (INT8)
+        if: matrix.runtime == 'openvino-int8'
+        run: |
+          optimum-cli export openvino --model huihui-ai/Huihui-Qwen3.5-0.8B-abliterated --task image-text-to-text --trust-remote-code --weight-format int8 ./ov_qwen3.5_0.8b_int8
+          ls ./ov_qwen3.5_0.8b_int8
+
+      - name: Export OpenVINO IR (INT4)
+        if: matrix.runtime == 'openvino-int4' || matrix.runtime == 'openvino-combo'
+        run: |
+          optimum-cli export openvino --model huihui-ai/Huihui-Qwen3.5-0.8B-abliterated --task image-text-to-text --trust-remote-code --weight-format int4 --group-size 128 --ratio 1.0 ./ov_qwen3.5_0.8b_int4
+          ls ./ov_qwen3.5_0.8b_int4
+          ls ./ov_qwen3.5_0.8b_int4/openvino_mtp_model.xml && echo "MTP present" || echo "MTP ABSENT"
+
+      # ---------------- Run the bench ----------------
+      - name: Run bench
+        run: |
+          case "${{ matrix.runtime }}" in
+            pytorch-eager)   python bench/pytorch_eager.py ;;
+            pytorch-compile) python bench/pytorch_compile.py ;;
+            pytorch-ipex)    python bench/pytorch_ipex.py ;;
+            pytorch-combo)   python bench/pytorch_combo.py ;;
+            llama-cpp-q4km)  python3 bench/llamacpp.py ;;
+            llama-cpp-combo) python3 bench/llamacpp_combo.py ;;
+            openvino-int8)   python bench/openvino_int8.py ;;
+            openvino-int4)   python bench/openvino_int4.py ;;
+            openvino-combo)  python bench/openvino_combo.py ;;
+          esac
+          ls -lh results-${{ matrix.runtime }}.json
+
+      - name: Upload result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-${{ matrix.runtime }}
+          path: |
+            results-${{ matrix.runtime }}.json
+            runner-info.txt
+          if-no-files-found: warn
