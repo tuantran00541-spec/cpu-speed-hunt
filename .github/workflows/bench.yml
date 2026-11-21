@@ -27,6 +27,7 @@ jobs:
           - pytorch-combo
           - llama-cpp-q4km
           - llama-cpp-combo
+          - llama-cpp-q8
           - openvino-int8
           - openvino-int4
           - openvino-combo
@@ -109,6 +110,14 @@ jobs:
           ./llama.cpp/build/bin/llama-quantize qwen3.5-0.8b-f16.gguf qwen3.5-0.8b-q4_k_m.gguf Q4_K_M
           ls -lh qwen3.5-0.8b-q4_k_m.gguf
 
+      # Q8_0 lane (user order 2026-11-21): same combo flags as llama-cpp-combo,
+      # only the weights differ. Quantized from the same F16 intermediate.
+      - name: Quantize text model to Q8_0
+        if: matrix.runtime == 'llama-cpp-q8'
+        run: |
+          ./llama.cpp/build/bin/llama-quantize qwen3.5-0.8b-f16.gguf qwen3.5-0.8b-q8_0.gguf Q8_0
+          ls -lh qwen3.5-0.8b-f16.gguf qwen3.5-0.8b-q4_k_m.gguf qwen3.5-0.8b-q8_0.gguf mmproj-qwen3.5-0.8b-f16.gguf
+
       # ---------------- OpenVINO family ----------------
       - name: Install OpenVINO stack (pinned)
         if: startsWith(matrix.runtime, 'openvino-')
@@ -144,6 +153,7 @@ jobs:
             pytorch-combo)   python bench/pytorch_combo.py ;;
             llama-cpp-q4km)  python3 bench/llamacpp.py ;;
             llama-cpp-combo) python3 bench/llamacpp_combo.py ;;
+            llama-cpp-q8)    python3 bench/llamacpp_q8.py ;;
             openvino-int8)   python bench/openvino_int8.py ;;
             openvino-int4)   python bench/openvino_int4.py ;;
             openvino-combo)  python bench/openvino_combo.py ;;
