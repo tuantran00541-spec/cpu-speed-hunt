@@ -30,6 +30,7 @@ jobs:
           - llama-cpp-q8
           - pytorch-fp16
           - llama-fp16-q4km
+          - llama-fp16-noquant
           - openvino-int8
           - openvino-int4
           - openvino-combo
@@ -106,8 +107,10 @@ jobs:
           cd ..
           ls -lh qwen3.5-0.8b-f16.gguf mmproj-qwen3.5-0.8b-f16.gguf
 
+      # The F16-noquant job uses the convert output directly — no quantize
+      # step at all (that is the point of the run).
       - name: Quantize text model to Q4_K_M
-        if: startsWith(matrix.runtime, 'llama-')
+        if: startsWith(matrix.runtime, 'llama-') && matrix.runtime != 'llama-fp16-noquant'
         run: |
           ./llama.cpp/build/bin/llama-quantize qwen3.5-0.8b-f16.gguf qwen3.5-0.8b-q4_k_m.gguf Q4_K_M
           ls -lh qwen3.5-0.8b-q4_k_m.gguf
@@ -158,6 +161,7 @@ jobs:
             llama-cpp-q8)    python3 bench/llamacpp_q8.py ;;
             pytorch-fp16)    python bench/fp16_eager.py ;;
             llama-fp16-q4km) python3 bench/fp16_q4km.py ;;
+            llama-fp16-noquant) python3 bench/llama_fp16_noquant.py ;;
             openvino-int8)   python bench/openvino_int8.py ;;
             openvino-int4)   python bench/openvino_int4.py ;;
             openvino-combo)  python bench/openvino_combo.py ;;
