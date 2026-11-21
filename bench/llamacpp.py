@@ -173,6 +173,11 @@ def generate(base_url: str, image_b64: str) -> tuple[str, int, dict]:
         "temperature": 0,
         "max_tokens": MAX_NEW_TOKENS,
         "stream": False,
+        # Qwen3.5 thinks by default under llama.cpp: without this the 100
+        # tokens go to reasoning_content and content comes back empty
+        # (round-2 diagnosis). Disabling thinking makes the answer land in
+        # content, like the transformers/OpenVINO paths.
+        "chat_template_kwargs": {"enable_thinking": False},
     }
     resp = http_json("POST", f"{base_url}/v1/chat/completions", payload,
                      timeout=REQUEST_TIMEOUT_S)
@@ -332,7 +337,10 @@ def main(argv: list[str]) -> int:
         f"(mmproj kept F16); see bench/llamacpp_setup.md. Server flags: "
         f"{' '.join(cmd[1:])}. Threads: -t/--threads-batch = nproc = {NPROC}. "
         f"Request: POST /v1/chat/completions, image first then text prompt, "
-        f"temperature 0, max_tokens 100, stream false. Token count from "
+        f"temperature 0, max_tokens 100, stream false, "
+        f"chat_template_kwargs enable_thinking=false (Qwen3.5 thinks by "
+        f"default under llama.cpp; without this the answer lands in "
+        f"reasoning_content and content is empty — round-2 diagnosis). Token count from "
         f"usage.completion_tokens (fallback: POST /tokenize on the output). "
         f"peak_rss_mb: peak llama-server VmRSS sampled every 50 ms from "
         f"/proc/<pid>/status during the whole bench (same whole-run peak "

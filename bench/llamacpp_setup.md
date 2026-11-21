@@ -175,6 +175,13 @@ prints the full chat-completions response plus the server log tail to
 stderr before failing (added after run 1, where both drivers died on an
 empty warmup with no diagnostic output).
 
+**Thinking mode (round-2 diagnosis):** Qwen3.5 thinks by default under
+llama.cpp — the 100 generated tokens went to `reasoning_content` and
+`content` came back empty, even though the server's own timings showed
+100 tokens generated (42.9 tok/s base). Both drivers now send
+`"chat_template_kwargs": {"enable_thinking": false}` in the request, so
+the answer lands in `content` like the transformers/OpenVINO paths.
+
 ## One-command recap (copy-paste, repo root)
 
 ```bash

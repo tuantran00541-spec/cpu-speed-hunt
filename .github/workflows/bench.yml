@@ -51,9 +51,12 @@ jobs:
 
       # transformers 5.x Qwen3VLVideoProcessor requires torchvision (all 4
       # PyTorch jobs failed on this ImportError in run 44893753958).
+      # Pin torchvision==0.23.0: it is the release paired with torch 2.8.0.
+      # An unpinned torchvision dragged torch 2.8.0 -> 2.15.0 in round 2,
+      # which broke IPEX 2.8.0 (it refuses any torch but 2.8.*).
       - name: Install torchvision (CPU)
         if: startsWith(matrix.runtime, 'pytorch-')
-        run: python -m pip install torchvision --index-url https://download.pytorch.org/whl/cpu
+        run: python -m pip install "torchvision==0.23.0" --index-url https://download.pytorch.org/whl/cpu
 
       - name: Install transformers + helpers
         if: startsWith(matrix.runtime, 'pytorch-')
@@ -65,7 +68,7 @@ jobs:
 
       - name: Verify PyTorch versions
         if: startsWith(matrix.runtime, 'pytorch-')
-        run: python -c "import torch, transformers; print('torch', torch.__version__); print('transformers', transformers.__version__); print('threads', torch.get_num_threads())"
+        run: python -c "import torch, transformers; print('torch', torch.__version__); print('transformers', transformers.__version__); print('threads', torch.get_num_threads()); assert torch.__version__.startswith('2.8.'), 'torch must be 2.8.x for IPEX 2.8.0'"
 
       # ---------------- llama.cpp family ----------------
       - name: Clone + build llama.cpp (CPU)

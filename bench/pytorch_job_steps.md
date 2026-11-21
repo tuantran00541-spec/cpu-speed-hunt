@@ -11,7 +11,7 @@ working directory (repo root).
 | Package | Pin | Reason |
 |---|---|---|
 | `torch` | `==2.8.0` (CPU wheel) | IPEX 2.8.0 is the newest IPEX release (checked 2026-11-21) and IPEX must match the torch major.minor version exactly. torch 2.15 exists, but no IPEX 2.15 exists. One torch version for all four scripts keeps the comparison fair. |
-| `torchvision` | CPU wheel (matching torch) | **Required — run 1 failed without it.** transformers 5.x `Qwen3VLVideoProcessor` requires torchvision at `AutoProcessor.from_pretrained` time (`ImportError` otherwise). Install from the CPU index right after torch. |
+| `torchvision` | CPU wheel `==0.23.0` (matching torch 2.8.0) | **Required — run 1 failed without it.** transformers 5.x `Qwen3VLVideoProcessor` requires torchvision at `AutoProcessor.from_pretrained` time (`ImportError` otherwise). Install from the CPU index right after torch. **Pin it:** an unpinned torchvision dragged torch 2.8.0 → 2.15.0 in round 2, which broke IPEX 2.8.0 (it refuses any torch but 2.8.*). |
 | `intel-extension-for-pytorch` | `==2.8.0` | Matches torch 2.8.0. |
 | `transformers` | `>=5.2.0,<6` | **Hard requirement.** This model is `Qwen3_5ForConditionalGeneration` (`model_type: qwen3_5`). transformers 4.57.1 does NOT recognize `qwen3_5` (`ValueError: ... Transformers does not recognize this architecture`); native support needs `transformers>=5.2.0`. Do not "fix" this by pinning 4.57. |
 | `accelerate`, `Pillow` | unpinned | `device_map="cpu"` needs accelerate; images are loaded with Pillow. |
@@ -52,7 +52,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install "torch==2.8.0" --index-url https://download.pytorch.org/whl/cpu
-          python -m pip install torchvision --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install "torchvision==0.23.0" --index-url https://download.pytorch.org/whl/cpu
 
       - name: Install transformers + helpers
         run: |
