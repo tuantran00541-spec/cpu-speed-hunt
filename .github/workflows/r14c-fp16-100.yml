@@ -68,8 +68,9 @@ jobs:
 
       # Merge needs transformers 5.x (it must know model type qwen3_5), but
       # the convert requirements pin transformers==4.57.6 for the converter.
-      # So the merge runs in its own venv inheriting system torch, with a
-      # fresh transformers 5.x + peft; the convert env stays untouched.
+      # So merge AND convert run in this venv (transformers 5.x + peft +
+      # torchvision, inheriting system torch/gguf); the system python keeps
+      # the pinned 4.57.6 only for the requirements install.
       - name: Merge r14c adapter into base (separate venv, transformers 5.x)
         run: |
           python3 -m venv --system-site-packages merge-venv
@@ -81,11 +82,15 @@ jobs:
           merge-venv/bin/python bench/merge_r14c.py --base hf-model --adapter r14c-adapter --out merged-r14c
           ls -lh merged-r14c && du -sh merged-r14c
 
+      # The merged tokenizer was saved by transformers 5.x and declares
+      # Qwen3_5Tokenizer, which the pinned 4.57.6 cannot load — so the
+      # convert also runs under the merge venv (5.x), which inherits the
+      # system torch/gguf/numpy from the convert-deps install.
       - name: Convert merged model to GGUF (F16 + mmproj F16, no quant)
         run: |
           cd llama.cpp
-          python3 convert_hf_to_gguf.py ../merged-r14c --outfile ../qwen3.5-0.8b-r14c-f16.gguf --outtype f16
-          python3 convert_hf_to_gguf.py ../merged-r14c --outfile ../mmproj-qwen3.5-0.8b-r14c-f16.gguf --outtype f16 --mmproj
+          ../merge-venv/bin/python convert_hf_to_gguf.py ../merged-r14c --outfile ../qwen3.5-0.8b-r14c-f16.gguf --outtype f16
+          ../merge-venv/bin/python convert_hf_to_gguf.py ../merged-r14c --outfile ../mmproj-qwen3.5-0.8b-r14c-f16.gguf --outtype f16 --mmproj
           cd ..
           ls -lh qwen3.5-0.8b-r14c-f16.gguf mmproj-qwen3.5-0.8b-r14c-f16.gguf
 
