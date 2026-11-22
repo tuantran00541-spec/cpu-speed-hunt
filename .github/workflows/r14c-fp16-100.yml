@@ -2,11 +2,13 @@
 # User order 2026-11-22: GitHub runner + r14c + combo speedups, no quant,
 # 100 random image pairs from the r14a/b/c legs, measure total time.
 #
-# Model: r14c LoRA adapter merged into huihui-ai/Huihui-Qwen3.5-0.8B-
-# abliterated, converted to F16 GGUF (no quantize step). The two GGUFs
-# (text F16 + mmproj F16) are release assets on tag r14c-fp16 in this repo
-# — built locally from the merged model, because the adapter lives only
-# on the author's VM. The runner downloads them, it does NOT re-merge.
+# The runner merges the r14c LoRA adapter into the base model itself
+# (the adapter lives only as a 49MB release asset; the 1.7GB merged
+# model and GGUFs are never uploaded from the VM — the local convert
+# died at 95% under VM memory pressure, so merge+convert happen here,
+# where the runner has 16GB RAM). Then it converts to F16 GGUF (no
+# quantize step) and runs the bench.
+# Adapter: release asset r14c-adapter.zip on tag r14c-fp16 in this repo.
 # Images: assets/r14c-100/ (100 crops + manifest.json, seed 20261122).
 # Bench: bench/llama_r14c_fp16_100.py — 1 warmup + 1 generation per image,
 # greedy, max 100 tokens, same prompt as the hunt. Headline: total_timed_s.
@@ -40,16 +42,42 @@ jobs:
         run: |
           git clone --depth 1 https://github.com/ggml-org/llama.cpp
           cd llama.cpp && cmake -B build && cmake --build build --config Release -j "$(nproc)"
-          ls -lh build/bin/llama-server
+          ls -lh build/bin/llama-server build/bin/llama-quantize
           ./build/bin/llama-server --version
 
-      - name: Download r14c F16 GGUFs (release r14c-fp16)
+      - name: Install convert + merge deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r llama.cpp/requirements/requirements-convert_hf_to_gguf.txt
+          python -m pip install huggingface_hub
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install transformers Pillow peft
+
+      - name: Download base model
+        run: |
+          python3 -c "from huggingface_hub import snapshot_download; snapshot_download(repo_id='huihui-ai/Huihui-Qwen3.5-0.8B-abliterated', local_dir='hf-model')"
+          ls hf-model && du -sh hf-model
+
+      - name: Download r14c adapter (release r14c-fp16)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release download r14c-fp16 --pattern 'qwen3.5-0.8b-r14c-f16.gguf' --pattern 'mmproj-qwen3.5-0.8b-r14c-f16.gguf'
+          gh release download r14c-fp16 --pattern 'r14c-adapter.zip'
+          python3 -c "import zipfile; zipfile.ZipFile('r14c-adapter.zip').extractall('r14c-adapter')"
+          ls -lh r14c-adapter && du -sh r14c-adapter
+
+      - name: Merge r14c adapter into base
+        run: |
+          python3 bench/merge_r14c.py --base hf-model --adapter r14c-adapter --out merged-r14c
+          ls -lh merged-r14c && du -sh merged-r14c
+
+      - name: Convert merged model to GGUF (F16 + mmproj F16, no quant)
+        run: |
+          cd llama.cpp
+          python3 convert_hf_to_gguf.py ../merged-r14c --outfile ../qwen3.5-0.8b-r14c-f16.gguf --outtype f16
+          python3 convert_hf_to_gguf.py ../merged-r14c --outfile ../mmproj-qwen3.5-0.8b-r14c-f16.gguf --outtype f16 --mmproj
+          cd ..
           ls -lh qwen3.5-0.8b-r14c-f16.gguf mmproj-qwen3.5-0.8b-r14c-f16.gguf
-          ls assets/r14c-100/ | wc -l
 
       - name: Run bench (100 images, r14c F16, combo flags)
         run: |
