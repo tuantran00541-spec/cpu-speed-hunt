@@ -75,6 +75,8 @@ jobs:
           python3 -m venv --system-site-packages merge-venv
           merge-venv/bin/pip install --upgrade pip
           merge-venv/bin/pip install "transformers>=5.2.0,<6" peft
+          # AutoProcessor for Qwen3-VL needs torchvision (processor save dies without it)
+          merge-venv/bin/pip install torchvision --index-url https://download.pytorch.org/whl/cpu
           merge-venv/bin/python -c "import transformers, peft; print('transformers', transformers.__version__); print('peft', peft.__version__)"
           merge-venv/bin/python bench/merge_r14c.py --base hf-model --adapter r14c-adapter --out merged-r14c
           ls -lh merged-r14c && du -sh merged-r14c
