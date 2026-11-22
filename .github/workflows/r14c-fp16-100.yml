@@ -45,13 +45,13 @@ jobs:
           ls -lh build/bin/llama-server build/bin/llama-quantize
           ./build/bin/llama-server --version
 
-      - name: Install convert + merge deps
+      - name: Install convert deps
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r llama.cpp/requirements/requirements-convert_hf_to_gguf.txt
           python -m pip install huggingface_hub
           python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
-          python -m pip install transformers Pillow peft
+          python -m pip install transformers Pillow
 
       - name: Download base model
         run: |
@@ -66,9 +66,17 @@ jobs:
           python3 -c "import zipfile; zipfile.ZipFile('r14c-adapter.zip').extractall('r14c-adapter')"
           ls -lh r14c-adapter && du -sh r14c-adapter
 
-      - name: Merge r14c adapter into base
+      # Merge needs transformers 5.x (it must know model type qwen3_5), but
+      # the convert requirements pin transformers==4.57.6 for the converter.
+      # So the merge runs in its own venv inheriting system torch, with a
+      # fresh transformers 5.x + peft; the convert env stays untouched.
+      - name: Merge r14c adapter into base (separate venv, transformers 5.x)
         run: |
-          python3 bench/merge_r14c.py --base hf-model --adapter r14c-adapter --out merged-r14c
+          python3 -m venv --system-site-packages merge-venv
+          merge-venv/bin/pip install --upgrade pip
+          merge-venv/bin/pip install "transformers>=5.2.0,<6" peft
+          merge-venv/bin/python -c "import transformers, peft; print('transformers', transformers.__version__); print('peft', peft.__version__)"
+          merge-venv/bin/python bench/merge_r14c.py --base hf-model --adapter r14c-adapter --out merged-r14c
           ls -lh merged-r14c && du -sh merged-r14c
 
       - name: Convert merged model to GGUF (F16 + mmproj F16, no quant)
