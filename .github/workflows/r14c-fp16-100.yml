@@ -1,0 +1,68 @@
+# r14c merged model, F16 zero-quant, 100 random r14a/b/c images — how long?
+# User order 2026-11-22: GitHub runner + r14c + combo speedups, no quant,
+# 100 random image pairs from the r14a/b/c legs, measure total time.
+#
+# Model: r14c LoRA adapter merged into huihui-ai/Huihui-Qwen3.5-0.8B-
+# abliterated, converted to F16 GGUF (no quantize step). The two GGUFs
+# (text F16 + mmproj F16) are release assets on tag r14c-fp16 in this repo
+# — built locally from the merged model, because the adapter lives only
+# on the author's VM. The runner downloads them, it does NOT re-merge.
+# Images: assets/r14c-100/ (100 crops + manifest.json, seed 20261122).
+# Bench: bench/llama_r14c_fp16_100.py — 1 warmup + 1 generation per image,
+# greedy, max 100 tokens, same prompt as the hunt. Headline: total_timed_s.
+name: r14c-fp16-100
+
+on:
+  workflow_dispatch:
+
+env:
+  HF_HUB_DISABLE_PROGRESS_BARS: "1"
+  PYTHONUNBUFFERED: "1"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Record runner CPU
+        run: |
+          { echo "## runner"; lscpu; echo; nproc; free -h; python3 --version; } | tee runner-info.txt
+
+      - name: Clone + build llama.cpp (CPU)
+        run: |
+          git clone --depth 1 https://github.com/ggml-org/llama.cpp
+          cd llama.cpp && cmake -B build && cmake --build build --config Release -j "$(nproc)"
+          ls -lh build/bin/llama-server
+          ./build/bin/llama-server --version
+
+      - name: Download r14c F16 GGUFs (release r14c-fp16)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download r14c-fp16 --pattern 'qwen3.5-0.8b-r14c-f16.gguf' --pattern 'mmproj-qwen3.5-0.8b-r14c-f16.gguf'
+          ls -lh qwen3.5-0.8b-r14c-f16.gguf mmproj-qwen3.5-0.8b-r14c-f16.gguf
+          ls assets/r14c-100/ | wc -l
+
+      - name: Run bench (100 images, r14c F16, combo flags)
+        run: |
+          python3 bench/llama_r14c_fp16_100.py
+          ls -lh results-llama-r14c-fp16-100.json
+
+      - name: Upload result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-llama-r14c-fp16-100
+          path: |
+            results-llama-r14c-fp16-100.json
+            runner-info.txt
+            llama-server-*.log
+          if-no-files-found: warn

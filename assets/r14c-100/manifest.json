@@ -1,0 +1,809 @@
+{
+  "seed": 20261122,
+  "source": "deduped union of sft-r14a/b/c-pairs.jsonl (5964 unique pairs); crops from sft-r14-crops-th-a/b/c.zip + sft-r10-crops.zip + sft-r14/data/crops",
+  "n": 100,
+  "images": [
+    "bk_72_014_282_2186.png",
+    "th_178_008_268_4100.png",
+    "th_73_006_266_4085.png",
+    "th_40_019_348_5982.png",
+    "th_161_005_103_5120.png",
+    "th_48_021_235_70.png",
+    "bk_22_024_334_2828.png",
+    "th_23_016_124_1436.png",
+    "th_103_007_278_9883.png",
+    "fresh_2384_19_012_180_3976.png",
+    "th_152_006_325_1747.png",
+    "th_173_007_58_4736.png",
+    "th_111_002_410_12683.png",
+    "th_132_008_106_8946.png",
+    "th_66_007_197_7145.png",
+    "th_136_005_177_3493.png",
+    "th_100_011_287_1375.png",
+    "th_20_009_133_2401.png",
+    "th_123_006_117_8475.png",
+    "tmpt_6_007_48_11858.png",
+    "th_39_022_94_3972.png",
+    "th_78_011_65_7310.png",
+    "th_50_019_226_1370.png",
+    "th_146_006_150_1409.png",
+    "th_81_013_260_4579.png",
+    "old_716_33_001_376_1169.png",
+    "th_185_010_118_6144.png",
+    "th_186_013_62_4080.png",
+    "th_91_008_122_10920.png",
+    "th_77_001_99_9208.png",
+    "th_153_011_111_2159.png",
+    "tmpt_7_011_90_10728.png",
+    "th_17_012_367_2321.png",
+    "th_66_008_339_1686.png",
+    "th_148_003_300_11357.png",
+    "old_919_40_006_36_1123.png",
+    "th_129_009_252_8539.png",
+    "th_114_007_76_9974.png",
+    "fresh_2398_20_014_360_5281.png",
+    "th_62_008_153_6980.png",
+    "th_154_005_196_5006.png",
+    "bk_7_030_231_1508.png",
+    "th_110_007_79_8826.png",
+    "th_46_012_152_7210.png",
+    "th_131_010_239_14470.png",
+    "th_128_009_172_3167.png",
+    "th_3_010_160_1625.png",
+    "th_134_007_242_7308.png",
+    "tmpt_8_013_293_9398.png",
+    "th_109_006_290_6705.png",
+    "th_113_007_277_5154.png",
+    "old_558_23_016_37_3837.png",
+    "th_45_029_230_93.png",
+    "th_116_005_152_4236.png",
+    "tmpt_2_006_57_9435.png",
+    "old_576_25_001_89_8786.png",
+    "th_121_015_165_9103.png",
+    "bk_62_007_233_1620.png",
+    "th_62_001_303_5885.png",
+    "th_182_010_301_4403.png",
+    "th_92_012_183_7306.png",
+    "th_183_011_271_5287.png",
+    "th_135_005_273_7029.png",
+    "bk_72_005_263_4839.png",
+    "th_153_014_373_2604.png",
+    "th_5_008_334_4350.png",
+    "th_71_004_262_5444.png",
+    "th_70_014_204_8364.png",
+    "th_15_030_79_181.png",
+    "th_88_002_215_648.png",
+    "fresh_2555_30_003_100_3684.png",
+    "th_41_007_331_2721.png",
+    "th_151_004_97_6418.png",
+    "th_185_002_220_9708.png",
+    "tmpt_6_007_24_10861.png",
+    "th_185_004_489_8321.png",
+    "th_99_003_230_9946.png",
+    "th_177_003_146_7310.png",
+    "th_38_025_362_3261.png",
+    "th_86_004_154_10623.png",
+    "th_155_015_120_3474.png",
+    "th_116_017_108_2483.png",
+    "th_142_002_134_2434.png",
+    "fresh_2645_42_003_294_6646.png",
+    "th_22_010_37_1856.png",
+    "th_8_017_97_75.png",
+    "th_93_008_230_2361.png",
+    "th_176_015_168_6801.png",
+    "th_75_002_187_5235.png",
+    "tmpt_1_012_329_1740.png",
+    "th_15_015_180_2241.png",
+    "th_184_004_220_5626.png",
+    "old_91_2_005_70_3224.png",
+    "bk_18_004_254_551.png",
+    "th_10_006_408_2256.png",
+    "old_134_2_009_91_1636.png",
+    "th_161_011_280_2856.png",
+    "th_55_009_191_9757.png",
+    "th_65_004_107_7338.png",
+    "th_20_003_110_2723.png"
+  ],
+  "pairs": [
+    {
+      "image": "bk_72_014_282_2186.png",
+      "chapter": 72,
+      "idx": 561,
+      "src": "bac-kiem",
+      "en": "COME IN."
+    },
+    {
+      "image": "th_178_008_268_4100.png",
+      "chapter": 178,
+      "idx": 7293,
+      "src": "th",
+      "en": "NO WAY!"
+    },
+    {
+      "image": "th_73_006_266_4085.png",
+      "chapter": 73,
+      "idx": 2961,
+      "src": "th",
+      "en": "PLEASE DON'T FALL FOR IT. THE DEMON IS LYING."
+    },
+    {
+      "image": "th_40_019_348_5982.png",
+      "chapter": 40,
+      "idx": 1605,
+      "src": "th",
+      "en": "I-I'M NOT!"
+    },
+    {
+      "image": "th_161_005_103_5120.png",
+      "chapter": 161,
+      "idx": 6713,
+      "src": "th",
+      "en": "LET'S JUST IGNORE IT AND RUN!"
+    },
+    {
+      "image": "th_48_021_235_70.png",
+      "chapter": 48,
+      "idx": 1964,
+      "src": "th",
+      "en": "I'LL FIX YOUR MOM SOON."
+    },
+    {
+      "image": "bk_22_024_334_2828.png",
+      "chapter": 22,
+      "idx": 159,
+      "src": "bac-kiem",
+      "en": "IF I WASN'T PREPARED TO DO THAT, I WOULDN'T HAVE INTERFERED IN THE FIRST PLACE."
+    },
+    {
+      "image": "th_23_016_124_1436.png",
+      "chapter": 23,
+      "idx": 989,
+      "src": "th",
+      "en": "WITH THE TAXES SEIZED THROUGH THE BREAKDOWN OF THE ILLEGAL UNDERGROUND ECONOMY,"
+    },
+    {
+      "image": "th_103_007_278_9883.png",
+      "chapter": 103,
+      "idx": 4188,
+      "src": "th",
+      "en": "I DON'T CARE!"
+    },
+    {
+      "image": "fresh_2384_19_012_180_3976.png",
+      "chapter": 19,
+      "idx": 2384,
+      "src": "fresh",
+      "en": "PIECE OF SHIT!!!"
+    },
+    {
+      "image": "th_152_006_325_1747.png",
+      "chapter": 152,
+      "idx": 6381,
+      "src": "th",
+      "en": "IT WAS THE SMELL OF OBUNSHI."
+    },
+    {
+      "image": "th_173_007_58_4736.png",
+      "chapter": 173,
+      "idx": 7104,
+      "src": "th",
+      "en": "...YOU DON'T NEED TO FORCE YOURSELF TO TELL ME IF IT'S HARD."
+    },
+    {
+      "image": "th_111_002_410_12683.png",
+      "chapter": 111,
+      "idx": 4503,
+      "src": "th",
+      "en": "QUIET DOWN..."
+    },
+    {
+      "image": "th_132_008_106_8946.png",
+      "chapter": 132,
+      "idx": 5516,
+      "src": "th",
+      "en": "THE FORMER MARQUIS SADE, THE PILLAR OF THAT HOUSE,"
+    },
+    {
+      "image": "th_66_007_197_7145.png",
+      "chapter": 66,
+      "idx": 2673,
+      "src": "th",
+      "en": "MY NEPHEW IS ALL GROWN UP!"
+    },
+    {
+      "image": "th_136_005_177_3493.png",
+      "chapter": 136,
+      "idx": 5718,
+      "src": "th",
+      "en": "I'VE SECURED A DINNER WITH THE PATRIARCH."
+    },
+    {
+      "image": "th_100_011_287_1375.png",
+      "chapter": 100,
+      "idx": 4092,
+      "src": "th",
+      "en": "W-WE'RE SORRY!"
+    },
+    {
+      "image": "th_20_009_133_2401.png",
+      "chapter": 20,
+      "idx": 855,
+      "src": "th",
+      "en": "YOU'RE SPEAKING AS IF YOU'RE GUILTY OF THE CRIME BUT THERE'S NO EVIDENCE."
+    },
+    {
+      "image": "th_123_006_117_8475.png",
+      "chapter": 123,
+      "idx": 5133,
+      "src": "th",
+      "en": "I SHOULD TAKE THE WRAITHWOOD FIRST,"
+    },
+    {
+      "image": "tmpt_6_007_48_11858.png",
+      "chapter": 6,
+      "idx": 420,
+      "src": "pilot-tmpt",
+      "en": "THAT'S ALRIGHT. THERE ARE OTHER OPTIONS."
+    },
+    {
+      "image": "th_39_022_94_3972.png",
+      "chapter": 39,
+      "idx": 1546,
+      "src": "th",
+      "en": "SINCE TONIGHT IS ALSO THE NIGHT OF A FULL MOON..."
+    },
+    {
+      "image": "th_78_011_65_7310.png",
+      "chapter": 78,
+      "idx": 3190,
+      "src": "th",
+      "en": "IT'S STRANGE TO THINK THEY HAD A PAST LIKE THIS..."
+    },
+    {
+      "image": "th_50_019_226_1370.png",
+      "chapter": 50,
+      "idx": 2043,
+      "src": "th",
+      "en": "THAT'S HOW YOU CAME ABOUT."
+    },
+    {
+      "image": "th_146_006_150_1409.png",
+      "chapter": 146,
+      "idx": 6078,
+      "src": "th",
+      "en": "THE TIME LEFT IS ABOUT HALF A YEAR..."
+    },
+    {
+      "image": "th_81_013_260_4579.png",
+      "chapter": 81,
+      "idx": 3319,
+      "src": "th",
+      "en": "THAT MEANS..."
+    },
+    {
+      "image": "old_716_33_001_376_1169.png",
+      "chapter": 33,
+      "idx": 716,
+      "src": "old",
+      "en": "WHAT DOES THIS DUEL HAVE TO DO WITH THE 3RD TEST...?"
+    },
+    {
+      "image": "th_185_010_118_6144.png",
+      "chapter": 185,
+      "idx": 7597,
+      "src": "th",
+      "en": "NO MATTER HOW MUCH... YOU STRUGGLE..."
+    },
+    {
+      "image": "th_186_013_62_4080.png",
+      "chapter": 186,
+      "idx": 7646,
+      "src": "th",
+      "en": "NO, WE SHOULD DO WHAT WE CAN."
+    },
+    {
+      "image": "th_91_008_122_10920.png",
+      "chapter": 91,
+      "idx": 3701,
+      "src": "th",
+      "en": "IT'LL BE A PROBLEM IF MY BODY DOESN'T RETURN....!"
+    },
+    {
+      "image": "th_77_001_99_9208.png",
+      "chapter": 77,
+      "idx": 3112,
+      "src": "th",
+      "en": "WITH THE BASIS OF THE DISCOVERED LOCATIONS OF THE BARBARIAN TRIBE,"
+    },
+    {
+      "image": "th_153_011_111_2159.png",
+      "chapter": 153,
+      "idx": 6432,
+      "src": "th",
+      "en": "EVEN IN THIS SITUATION, CAN YOU FORGIVE YOUR FATHER?"
+    },
+    {
+      "image": "tmpt_7_011_90_10728.png",
+      "chapter": 7,
+      "idx": 488,
+      "src": "pilot-tmpt",
+      "en": "WHERE DID I LEAVE IT..."
+    },
+    {
+      "image": "th_17_012_367_2321.png",
+      "chapter": 17,
+      "idx": 742,
+      "src": "th",
+      "en": "THEN THAT MUST MEAN YOU KNOW A LOT ABOUT THE SITUATION HERE,"
+    },
+    {
+      "image": "th_66_008_339_1686.png",
+      "chapter": 66,
+      "idx": 2675,
+      "src": "th",
+      "en": "YOU'RE NO DIFFERENT THAN THE BARBARIANS, TERRIER."
+    },
+    {
+      "image": "th_148_003_300_11357.png",
+      "chapter": 148,
+      "idx": 6191,
+      "src": "th",
+      "en": "I'LL BE HOSTING THE CLOSING CEREMONY."
+    },
+    {
+      "image": "old_919_40_006_36_1123.png",
+      "chapter": 40,
+      "idx": 919,
+      "src": "old",
+      "en": "I'M GLAD WE DISCOVERED IT SO SOON."
+    },
+    {
+      "image": "th_129_009_252_8539.png",
+      "chapter": 129,
+      "idx": 5410,
+      "src": "th",
+      "en": "HE'S HERE!"
+    },
+    {
+      "image": "th_114_007_76_9974.png",
+      "chapter": 114,
+      "idx": 4653,
+      "src": "th",
+      "en": "...BUT WHY?"
+    },
+    {
+      "image": "fresh_2398_20_014_360_5281.png",
+      "chapter": 20,
+      "idx": 2398,
+      "src": "fresh",
+      "en": "BUT THAT WON'T WORK ANYMORE!"
+    },
+    {
+      "image": "th_62_008_153_6980.png",
+      "chapter": 62,
+      "idx": 2448,
+      "src": "th",
+      "en": "HEY, YOU! SUSPICIOUS-LOOKING GUY! COME HERE!"
+    },
+    {
+      "image": "th_154_005_196_5006.png",
+      "chapter": 154,
+      "idx": 6463,
+      "src": "th",
+      "en": "ONE DAY, HE RECEIVED A CALL FROM THE RESURRECTED RUNE."
+    },
+    {
+      "image": "bk_7_030_231_1508.png",
+      "chapter": 7,
+      "idx": 73,
+      "src": "bac-kiem",
+      "en": "BUT IF IT'S A FIGHT YOU'RE LOOKING FOR, THEN I'LL GLADLY WELCOME IT! COME!!!"
+    },
+    {
+      "image": "th_110_007_79_8826.png",
+      "chapter": 110,
+      "idx": 4461,
+      "src": "th",
+      "en": "VIKIR! THERE'S MAIL ADDRESSED TO YOU TOO."
+    },
+    {
+      "image": "th_46_012_152_7210.png",
+      "chapter": 46,
+      "idx": 1854,
+      "src": "th",
+      "en": "I CANNOT LET A SUSPICIOUS PERSON RETURN!"
+    },
+    {
+      "image": "th_131_010_239_14470.png",
+      "chapter": 131,
+      "idx": 7756,
+      "src": "th",
+      "en": "DAMN IT... DID WE MISS THEM?"
+    },
+    {
+      "image": "th_128_009_172_3167.png",
+      "chapter": 128,
+      "idx": 5365,
+      "src": "th",
+      "en": "HO... YOU'RE RIGHT. ABOUT ME BEING A PRIEST, AND THE COUSIN PART."
+    },
+    {
+      "image": "th_3_010_160_1625.png",
+      "chapter": 3,
+      "idx": 133,
+      "src": "th",
+      "en": "HELLO, PATRIARCH."
+    },
+    {
+      "image": "th_134_007_242_7308.png",
+      "chapter": 134,
+      "idx": 5629,
+      "src": "th",
+      "en": "I BELIEVE THIS EVENT HAS TRULY TAUGHT THEM ABOUT \"THE POWER OF MONEY.\""
+    },
+    {
+      "image": "tmpt_8_013_293_9398.png",
+      "chapter": 8,
+      "idx": 568,
+      "src": "pilot-tmpt",
+      "en": "BUT THAT DOESN'T CHANGE MUCH."
+    },
+    {
+      "image": "th_109_006_290_6705.png",
+      "chapter": 109,
+      "idx": 4433,
+      "src": "th",
+      "en": "YEAH, IT LOOKED LIKE SHE WAS FIGHTING THE NIGHT HOUND."
+    },
+    {
+      "image": "th_113_007_277_5154.png",
+      "chapter": 113,
+      "idx": 4585,
+      "src": "th",
+      "en": "APPEAL?"
+    },
+    {
+      "image": "old_558_23_016_37_3837.png",
+      "chapter": 23,
+      "idx": 558,
+      "src": "old",
+      "en": "MADO HOUSE QUARTERS"
+    },
+    {
+      "image": "th_45_029_230_93.png",
+      "chapter": 45,
+      "idx": 1826,
+      "src": "th",
+      "en": "NOW, IT'S ALMOST TIME THE HOLY WATER POURS,"
+    },
+    {
+      "image": "th_116_005_152_4236.png",
+      "chapter": 116,
+      "idx": 4754,
+      "src": "th",
+      "en": "BEFORE REGRESSION, HE WAS ONE OF THE GREAT HEROES OF THE HUMAN ALLIED FORCES."
+    },
+    {
+      "image": "tmpt_2_006_57_9435.png",
+      "chapter": 2,
+      "idx": 135,
+      "src": "pilot-tmpt",
+      "en": "SURVEY THEM CLOSELY,"
+    },
+    {
+      "image": "old_576_25_001_89_8786.png",
+      "chapter": 25,
+      "idx": 576,
+      "src": "old",
+      "en": "Normal Formation"
+    },
+    {
+      "image": "th_121_015_165_9103.png",
+      "chapter": 121,
+      "idx": 5045,
+      "src": "th",
+      "en": "AND YOU CAN SENSE THINGS WITHOUT EVEN SEEING THEM."
+    },
+    {
+      "image": "bk_62_007_233_1620.png",
+      "chapter": 62,
+      "idx": 269,
+      "src": "bac-kiem",
+      "en": "I'LL GIVE YOU A SIGNAL..."
+    },
+    {
+      "image": "th_62_001_303_5885.png",
+      "chapter": 62,
+      "idx": 2423,
+      "src": "th",
+      "en": "IT'S BEEN A WHILE SINCE I'VE BEEN HERE."
+    },
+    {
+      "image": "th_182_010_301_4403.png",
+      "chapter": 182,
+      "idx": 7477,
+      "src": "th",
+      "en": "SO NO MATTER HOW MUCH YOU CRY AND BEG NOW, IT'S USELESS?"
+    },
+    {
+      "image": "th_92_012_183_7306.png",
+      "chapter": 92,
+      "idx": 3774,
+      "src": "th",
+      "en": "ALRIGHT, LET'S GET READY!"
+    },
+    {
+      "image": "th_183_011_271_5287.png",
+      "chapter": 183,
+      "idx": 7519,
+      "src": "th",
+      "en": "...NONSENSE."
+    },
+    {
+      "image": "th_135_005_273_7029.png",
+      "chapter": 135,
+      "idx": 5677,
+      "src": "th",
+      "en": "HER EXPRESSION SCREAMED TRUE HATRED AND CONTEMPT FOR SOMEONE..."
+    },
+    {
+      "image": "bk_72_005_263_4839.png",
+      "chapter": 72,
+      "idx": 535,
+      "src": "bac-kiem",
+      "en": "IT TASTES GOOD."
+    },
+    {
+      "image": "th_153_014_373_2604.png",
+      "chapter": 153,
+      "idx": 6444,
+      "src": "th",
+      "en": "IT HURTS... TOO MUCH...!"
+    },
+    {
+      "image": "th_5_008_334_4350.png",
+      "chapter": 5,
+      "idx": 222,
+      "src": "th",
+      "en": "AND MAKES THE BODY STRONGER."
+    },
+    {
+      "image": "th_71_004_262_5444.png",
+      "chapter": 71,
+      "idx": 2908,
+      "src": "th",
+      "en": "STOP TALKING. THERE'S NO WAY THE DEAD CAN COME BACK."
+    },
+    {
+      "image": "th_70_014_204_8364.png",
+      "chapter": 70,
+      "idx": 2896,
+      "src": "th",
+      "en": "H-HOW DO YOU KNOW THAT...?!"
+    },
+    {
+      "image": "th_15_030_79_181.png",
+      "chapter": 15,
+      "idx": 666,
+      "src": "th",
+      "en": "COINCIDENCE...?"
+    },
+    {
+      "image": "th_88_002_215_648.png",
+      "chapter": 88,
+      "idx": 3548,
+      "src": "th",
+      "en": "SO HOW WAS MY ACTING,"
+    },
+    {
+      "image": "fresh_2555_30_003_100_3684.png",
+      "chapter": 30,
+      "idx": 2555,
+      "src": "fresh",
+      "en": "MADO HOUSE INDIVIDUAL TRAINING ROOM"
+    },
+    {
+      "image": "th_41_007_331_2721.png",
+      "chapter": 41,
+      "idx": 1624,
+      "src": "th",
+      "en": "MEANS THAT THEIR ALLIANCE IS STILL STRONG."
+    },
+    {
+      "image": "th_151_004_97_6418.png",
+      "chapter": 151,
+      "idx": 6326,
+      "src": "th",
+      "en": "AND DURING A SABBATICAL, TO HEAL THE AFTEREFFECTS OF MY CHRONIC ILLNESS,"
+    },
+    {
+      "image": "th_185_002_220_9708.png",
+      "chapter": 185,
+      "idx": 7573,
+      "src": "th",
+      "en": "VIKIR... REALLY ESCAPED THE TOWER...!"
+    },
+    {
+      "image": "tmpt_6_007_24_10861.png",
+      "chapter": 6,
+      "idx": 418,
+      "src": "pilot-tmpt",
+      "en": "- CANNOT BE MASTERED BECAUSE OF YOUR INJURY. -"
+    },
+    {
+      "image": "th_185_004_489_8321.png",
+      "chapter": 185,
+      "idx": 7580,
+      "src": "th",
+      "en": "MY DAUGHTER!!"
+    },
+    {
+      "image": "th_99_003_230_9946.png",
+      "chapter": 99,
+      "idx": 4058,
+      "src": "th",
+      "en": "LAST QUESTION."
+    },
+    {
+      "image": "th_177_003_146_7310.png",
+      "chapter": 177,
+      "idx": 7252,
+      "src": "th",
+      "en": "BUT I HAVE NO INTENTION OF STAYING IN THE TREE OF FALLING INDEFINITELY BECAUSE OF THAT AMBITION."
+    },
+    {
+      "image": "th_38_025_362_3261.png",
+      "chapter": 38,
+      "idx": 1502,
+      "src": "th",
+      "en": "WHAT IS UNFAIR?!"
+    },
+    {
+      "image": "th_86_004_154_10623.png",
+      "chapter": 86,
+      "idx": 3480,
+      "src": "th",
+      "en": "Lead us not into temptation, but deliver us from evil..."
+    },
+    {
+      "image": "th_155_015_120_3474.png",
+      "chapter": 155,
+      "idx": 6520,
+      "src": "th",
+      "en": "AND BECOME SACRIFICES FOR THE \"AGE OF DESTRUCTION\"!"
+    },
+    {
+      "image": "th_116_017_108_2483.png",
+      "chapter": 116,
+      "idx": 4797,
+      "src": "th",
+      "en": "HOHO, THAT'S RIGHT."
+    },
+    {
+      "image": "th_142_002_134_2434.png",
+      "chapter": 142,
+      "idx": 5828,
+      "src": "th",
+      "en": "THAT WAS WHEN I REALIZED"
+    },
+    {
+      "image": "fresh_2645_42_003_294_6646.png",
+      "chapter": 42,
+      "idx": 2645,
+      "src": "fresh",
+      "en": "NO ONE WAS ABLE TO FIND OUT WHO SHE WAS."
+    },
+    {
+      "image": "th_22_010_37_1856.png",
+      "chapter": 22,
+      "idx": 938,
+      "src": "th",
+      "en": "THINGS LIKE INJUSTICE AND COMPROMISE DO NOT EXIST FOR ME!"
+    },
+    {
+      "image": "th_8_017_97_75.png",
+      "chapter": 8,
+      "idx": 397,
+      "src": "th",
+      "en": "THE TEN-THOUSAND-EPISTLE LIBRARY."
+    },
+    {
+      "image": "th_93_008_230_2361.png",
+      "chapter": 93,
+      "idx": 3812,
+      "src": "th",
+      "en": "BABY MADAM."
+    },
+    {
+      "image": "th_176_015_168_6801.png",
+      "chapter": 176,
+      "idx": 7233,
+      "src": "th",
+      "en": "YET YOU'VE ALREADY HEALED. YOUR RECOVERY IS INCREDIBLE...."
+    },
+    {
+      "image": "th_75_002_187_5235.png",
+      "chapter": 75,
+      "idx": 3028,
+      "src": "th",
+      "en": "THERE'S ONE PERSON WHO'S GAINING ALL THE ATTENTION IN THE FIRE CORPS."
+    },
+    {
+      "image": "tmpt_1_012_329_1740.png",
+      "chapter": 1,
+      "idx": 35,
+      "src": "pilot-tmpt",
+      "en": "...THIS SITUATION,"
+    },
+    {
+      "image": "th_15_015_180_2241.png",
+      "chapter": 15,
+      "idx": 654,
+      "src": "th",
+      "en": "WHAT WOULD BE MY ODDS OF WINNING IF I FACED HIM WITH MY FULL STRENGTH, PRE-REGRESSION?"
+    },
+    {
+      "image": "th_184_004_220_5626.png",
+      "chapter": 184,
+      "idx": 7535,
+      "src": "th",
+      "en": "T-THAT'S AN ENORMOUS AMOUNT OF NEGATIVE-DIMENSIONAL ENERGY...!"
+    },
+    {
+      "image": "old_91_2_005_70_3224.png",
+      "chapter": 2,
+      "idx": 91,
+      "src": "old",
+      "en": "WERE YOU THE ONE WHO SAVED MY LIFE, GOD?"
+    },
+    {
+      "image": "bk_18_004_254_551.png",
+      "chapter": 18,
+      "idx": 125,
+      "src": "bac-kiem",
+      "en": "THAT IS WHY..."
+    },
+    {
+      "image": "th_10_006_408_2256.png",
+      "chapter": 10,
+      "idx": 494,
+      "src": "th",
+      "en": "EXCEPT FOR ME, THAT IS."
+    },
+    {
+      "image": "old_134_2_009_91_1636.png",
+      "chapter": 2,
+      "idx": 134,
+      "src": "old",
+      "en": "SILENT MODE HAS BEEN DEACTIVATED."
+    },
+    {
+      "image": "th_161_011_280_2856.png",
+      "chapter": 161,
+      "idx": 6731,
+      "src": "th",
+      "en": "WELL, OF COURSE,"
+    },
+    {
+      "image": "th_55_009_191_9757.png",
+      "chapter": 55,
+      "idx": 2243,
+      "src": "th",
+      "en": "I'M GOING TO KILL HIM IN ONE ATTACK....!"
+    },
+    {
+      "image": "th_65_004_107_7338.png",
+      "chapter": 65,
+      "idx": 2616,
+      "src": "th",
+      "en": "NO, I WAS JUST MENTIONING THAT YOUR MEAT APPEARS TO BE VERY UNDERCOOKED."
+    },
+    {
+      "image": "th_20_003_110_2723.png",
+      "chapter": 20,
+      "idx": 836,
+      "src": "th",
+      "en": "DO YOU THINK THAT I WENT OVERBOARD?"
+    }
+  ]
+}
