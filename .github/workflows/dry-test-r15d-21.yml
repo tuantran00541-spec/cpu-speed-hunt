@@ -1,0 +1,114 @@
+# Repetition-loop fix test on r15 leg D F16 (same model + 21 images as
+# r15d-fp16-21, which ran greedy with NO repetition control).
+# User order 2026-11-23: test the two-layer loop fix live:
+#   1. sampling: --repeat-penalty 1.1 --repeat-last-n 64 + DRY
+#      --dry-multiplier 0.8 (defaults: base 1.75, allowed-length 2,
+#      penalty-last-n 64) — breaks the greedy attractor, lets 1-2 token
+#      repeats (Vietnamese reduplication) through.
+#   2. loop guard: bench/loop_guard.py truncates a repetition loop out of
+#      the raw output after generation (repeated 4-gram rule + sentence
+#      loop rule + dangling-function-word trim). Unit-tested locally
+#      (bench/test_loop_guard.py): catches the real Q4 fp16_07 loop
+#      (100 tokens -> clean sentence) and leaves all 21 clean leg D
+#      outputs untouched.
+# Baseline for comparison is the existing r15d run (results JSON in
+# r15d-fp16-21-result/): same model, same 21 images, greedy, no penalty,
+# 0 loops. This run answers: does DRY change good outputs, and does the
+# guard fire on anything? Only the 21-image set runs (no 100-image set;
+# speed is already known).
+# Setup steps (merge + convert) are copied verbatim from r15d-fp16-21.yml.
+name: dry-test-r15d-21
+
+on:
+  workflow_dispatch:
+
+env:
+  HF_HUB_DISABLE_PROGRESS_BARS: "1"
+  PYTHONUNBUFFERED: "1"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Record runner CPU
+        run: |
+          { echo "## runner"; lscpu; echo; nproc; free -h; python3 --version; } | tee runner-info.txt
+
+      - name: Clone + build llama.cpp (CPU)
+        run: |
+          git clone --depth 1 https://github.com/ggml-org/llama.cpp
+          cd llama.cpp && cmake -B build && cmake --build build --config Release -j "$(nproc)"
+          ls -lh build/bin/llama-server build/bin/llama-quantize
+          ./build/bin/llama-server --version
+
+      - name: Install convert deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r llama.cpp/requirements/requirements-convert_hf_to_gguf.txt
+          python -m pip install huggingface_hub
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install transformers Pillow
+
+      - name: Download base model
+        run: |
+          python3 -c "from huggingface_hub import snapshot_download; snapshot_download(repo_id='huihui-ai/Huihui-Qwen3.5-0.8B-abliterated', local_dir='hf-model')"
+          ls hf-model && du -sh hf-model
+
+      - name: Download leg D adapter (audit-evidence, commit 12402f3e)
+        run: |
+          mkdir -p r15d-adapter
+          BASE="https://raw.githubusercontent.com/tuantran00541-spec/manga-translator/audit-evidence/sft-data/sft-r15d/pilot-out"
+          curl -fsSL "$BASE/adapter_config.json" -o r15d-adapter/adapter_config.json
+          curl -fsSL "$BASE/adapter_model.safetensors.part00" -o r15d-adapter/adapter_model.safetensors.part00
+          curl -fsSL "$BASE/adapter_model.safetensors.part01" -o r15d-adapter/adapter_model.safetensors.part01
+          curl -fsSL "$BASE/adapter_model.safetensors.part02" -o r15d-adapter/adapter_model.safetensors.part02
+          cd r15d-adapter
+          cat adapter_model.safetensors.part* > adapter_model.safetensors
+          rm adapter_model.safetensors.part00 adapter_model.safetensors.part01 adapter_model.safetensors.part02
+          ls -lh
+          sha256sum adapter_model.safetensors
+          python3 -c "import json; print('adapter base:', json.load(open('adapter_config.json'))['base_model_name_or_path']); print('r:', json.load(open('adapter_config.json'))['r'])"
+          cd ..
+
+      - name: Merge leg D adapter into base (separate venv, transformers 5.x)
+        run: |
+          python3 -m venv --system-site-packages merge-venv
+          merge-venv/bin/pip install --upgrade pip
+          merge-venv/bin/pip install "transformers>=5.2.0,<6" peft
+          merge-venv/bin/pip install torchvision --index-url https://download.pytorch.org/whl/cpu
+          merge-venv/bin/python -c "import transformers, peft; print('transformers', transformers.__version__); print('peft', peft.__version__)"
+          merge-venv/bin/python bench/merge_r14c.py --base hf-model --adapter r15d-adapter --out merged-r15d
+          ls -lh merged-r15d && du -sh merged-r15d
+
+      - name: Convert merged model to GGUF (F16 + mmproj F16, no quant)
+        run: |
+          cd llama.cpp
+          ../merge-venv/bin/python convert_hf_to_gguf.py ../merged-r15d --outfile ../qwen3.5-0.8b-r15d-f16.gguf --outtype f16
+          ../merge-venv/bin/python convert_hf_to_gguf.py ../merged-r15d --outfile ../mmproj-qwen3.5-0.8b-r15d-f16.gguf --outtype f16 --mmproj
+          cd ..
+          ls -lh qwen3.5-0.8b-r15d-f16.gguf mmproj-qwen3.5-0.8b-r15d-f16.gguf
+
+      - name: Run bench (21 unseen images, leg D F16, repeat-penalty 1.1 + DRY 0.8 + loop guard)
+        run: |
+          python3 bench/llama_r15d_fp16.py --manifest assets/r15d-21/manifest.json --image-dir assets --runtime llama-drytest-r15d-21 --output results-llama-drytest-r15d-21.json --repeat-penalty 1.1 --dry-multiplier 0.8
+          ls -lh results-llama-drytest-r15d-21.json
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-drytest-r15d-21
+          path: |
+            results-llama-drytest-r15d-21.json
+            runner-info.txt
+            llama-server-*.log
+          if-no-files-found: warn

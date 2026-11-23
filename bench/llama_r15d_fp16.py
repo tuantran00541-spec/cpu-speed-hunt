@@ -188,7 +188,9 @@ def generate(base_url: str, image_b64: str) -> tuple[str, int, dict]:
 # ---------------------------------------------------------------- bench
 
 def build_server_cmd(port: int, server_bin: Path, model: Path, mmproj: Path,
-                     flash_attn: bool = True, cache_prompt: bool = True) -> list[str]:
+                     flash_attn: bool = True, cache_prompt: bool = True,
+                     repeat_penalty: float = 1.0,
+                     dry_multiplier: float = 0.0) -> list[str]:
     cmd = [
         str(server_bin),
         "-m", str(model),
@@ -209,6 +211,15 @@ def build_server_cmd(port: int, server_bin: Path, model: Path, mmproj: Path,
         cmd += ["-fa", "on"]
     if cache_prompt:
         cmd += ["--cache-prompt", "--cache-reuse", "256"]
+    if repeat_penalty != 1.0:
+        cmd += ["--repeat-penalty", str(repeat_penalty),
+                "--repeat-last-n", "64"]
+    if dry_multiplier != 0.0:
+        # DRY: penalises only repeated sequences longer than
+        # --dry-allowed-length (default 2), so Vietnamese reduplication
+        # ("di di", "rat rat") passes untouched; sequence breakers
+        # (\n, :, ", *) reset the memory at sentence boundaries.
+        cmd += ["--dry-multiplier", str(dry_multiplier)]
     return cmd
 
 
@@ -247,6 +258,10 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--model-label", default=MODEL_LABEL)
     ap.add_argument("--port", type=int, default=PORT)
     ap.add_argument("--output", default=None)
+    ap.add_argument("--repeat-penalty", type=float, default=1.0,
+                    help="llama-server --repeat-penalty (1.0 = disabled)")
+    ap.add_argument("--dry-multiplier", type=float, default=0.0,
+                    help="llama-server --dry-multiplier (0.0 = disabled)")
     args = ap.parse_args(argv)
     runtime = args.runtime
     if args.output is None:
@@ -292,7 +307,8 @@ def main(argv: list[str]) -> int:
     last_error = ""
     for label, flash_attn, cache_prompt in attempts:
         cmd = build_server_cmd(args.port, server_bin, model, mmproj,
-                               flash_attn, cache_prompt)
+                               flash_attn, cache_prompt,
+                               args.repeat_penalty, args.dry_multiplier)
         print(f"[{runtime}] attempt '{label}': {' '.join(cmd)}")
         try:
             proc, load_s, log_f = start_server(cmd, log_path)
@@ -329,13 +345,27 @@ def main(argv: list[str]) -> int:
                     print(f"FATAL: image {n}/{len(image_paths)} {img_path.name} "
                           f"returned empty output", file=sys.stderr)
                     return 1
+                # Loop guard (bench/loop_guard.py): cut a repetition loop
+                # out of the raw output; clean outputs pass through
+                # untouched. Both versions are recorded.
+                try:
+                    from loop_guard import truncate_loop
+                    cleaned, truncated, loop_detail = truncate_loop(text)
+                except ImportError:
+                    cleaned, truncated, loop_detail = text.strip(), False, ""
                 results_images.append({
                     "name": img_path.name,
                     "seconds": dt,
                     "tokens": tokens,
                     "tok_per_s": tokens / dt if dt > 0 else 0.0,
-                    "output": text.strip(),
+                    "output": cleaned.strip(),
+                    "output_raw": text.strip(),
+                    "truncated": truncated,
+                    "loop_detail": loop_detail,
                 })
+                if truncated:
+                    print(f"[{runtime}] {img_path.name}: LOOP CUT "
+                          f"({loop_detail}): {cleaned[:80]!r}")
                 if n % 10 == 0 or n == len(image_paths):
                     done_s = sum(r["seconds"] for r in results_images)
                     print(f"[{runtime}] {n}/{len(image_paths)}: "
