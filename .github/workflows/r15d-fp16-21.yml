@@ -1,0 +1,132 @@
+# r15 leg D merged model, F16 zero-quant — how does it translate?
+# User order 2026-11-23: GitHub runner + leg D adapter (best r15 leg,
+# run 45102207822, mean_sim 0.598) + combo speedups, no quant.
+# Primary set: 21 unseen images (3 standard hunt images + 18 TMPT
+# hard-test crops, the FP16-vs-Q4 set). Bonus: the 100-image r14c set
+# for a speed number on the same model.
+#
+# The runner merges the leg D LoRA adapter into the base model itself
+# (the adapter lives only as split .part files on manga-translator
+# branch audit-evidence, sft-data/sft-r15d/pilot-out/; the 1.7GB merged
+# model and GGUFs are never uploaded from the VM — merge+convert happen
+# here, where the runner has 16GB RAM). Then it converts to F16 GGUF
+# (no quantize step) and runs the bench. Per-image Vietnamese output is
+# stored in the result JSONs (quality is the deliverable, not just speed).
+# Adapter: audit-evidence commit 12402f3e, files verified identical
+# between pilot-out/ and pilot-out/epoch-1/ (same blob SHAs).
+# Images: assets/r15d-21/ (21 crops + manifest.json) and assets/r14c-100/.
+# Bench: bench/llama_r15d_fp16.py — 1 warmup + 1 generation per image,
+# greedy, max 100 tokens, same prompt as the hunt. Headline: per-image
+# output text + mean_s_per_image.
+name: r15d-fp16-21
+
+on:
+  workflow_dispatch:
+
+env:
+  HF_HUB_DISABLE_PROGRESS_BARS: "1"
+  PYTHONUNBUFFERED: "1"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Record runner CPU
+        run: |
+          { echo "## runner"; lscpu; echo; nproc; free -h; python3 --version; } | tee runner-info.txt
+
+      - name: Clone + build llama.cpp (CPU)
+        run: |
+          git clone --depth 1 https://github.com/ggml-org/llama.cpp
+          cd llama.cpp && cmake -B build && cmake --build build --config Release -j "$(nproc)"
+          ls -lh build/bin/llama-server build/bin/llama-quantize
+          ./build/bin/llama-server --version
+
+      - name: Install convert deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r llama.cpp/requirements/requirements-convert_hf_to_gguf.txt
+          python -m pip install huggingface_hub
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install transformers Pillow
+
+      - name: Download base model
+        run: |
+          python3 -c "from huggingface_hub import snapshot_download; snapshot_download(repo_id='huihui-ai/Huihui-Qwen3.5-0.8B-abliterated', local_dir='hf-model')"
+          ls hf-model && du -sh hf-model
+
+      - name: Download leg D adapter (audit-evidence, commit 12402f3e)
+        run: |
+          mkdir -p r15d-adapter
+          BASE="https://raw.githubusercontent.com/tuantran00541-spec/manga-translator/audit-evidence/sft-data/sft-r15d/pilot-out"
+          curl -fsSL "$BASE/adapter_config.json" -o r15d-adapter/adapter_config.json
+          curl -fsSL "$BASE/adapter_model.safetensors.part00" -o r15d-adapter/adapter_model.safetensors.part00
+          curl -fsSL "$BASE/adapter_model.safetensors.part01" -o r15d-adapter/adapter_model.safetensors.part01
+          curl -fsSL "$BASE/adapter_model.safetensors.part02" -o r15d-adapter/adapter_model.safetensors.part02
+          cd r15d-adapter
+          cat adapter_model.safetensors.part* > adapter_model.safetensors
+          rm adapter_model.safetensors.part00 adapter_model.safetensors.part01 adapter_model.safetensors.part02
+          ls -lh
+          sha256sum adapter_model.safetensors
+          python3 -c "import json; print('adapter base:', json.load(open('adapter_config.json'))['base_model_name_or_path']); print('r:', json.load(open('adapter_config.json'))['r'])"
+          # expected part blob SHAs (git, audit-evidence): part00 20a0ab9f..., part01 bf24b305..., part02 d5a9b251...
+          cd ..
+
+      # Merge needs transformers 5.x (it must know model type qwen3_5), but
+      # the convert requirements pin transformers==4.57.6 for the converter.
+      # So merge AND convert run in this venv (transformers 5.x + peft +
+      # torchvision, inheriting system torch/gguf); the system python keeps
+      # the pinned 4.57.6 only for the requirements install.
+      - name: Merge leg D adapter into base (separate venv, transformers 5.x)
+        run: |
+          python3 -m venv --system-site-packages merge-venv
+          merge-venv/bin/pip install --upgrade pip
+          merge-venv/bin/pip install "transformers>=5.2.0,<6" peft
+          # AutoProcessor for Qwen3-VL needs torchvision (processor save dies without it)
+          merge-venv/bin/pip install torchvision --index-url https://download.pytorch.org/whl/cpu
+          merge-venv/bin/python -c "import transformers, peft; print('transformers', transformers.__version__); print('peft', peft.__version__)"
+          merge-venv/bin/python bench/merge_r14c.py --base hf-model --adapter r15d-adapter --out merged-r15d
+          ls -lh merged-r15d && du -sh merged-r15d
+
+      # The merged tokenizer was saved by transformers 5.x and declares
+      # Qwen3_5Tokenizer, which the pinned 4.57.6 cannot load — so the
+      # convert also runs under the merge venv (5.x), which inherits the
+      # system torch/gguf/numpy from the convert-deps install.
+      - name: Convert merged model to GGUF (F16 + mmproj F16, no quant)
+        run: |
+          cd llama.cpp
+          ../merge-venv/bin/python convert_hf_to_gguf.py ../merged-r15d --outfile ../qwen3.5-0.8b-r15d-f16.gguf --outtype f16
+          ../merge-venv/bin/python convert_hf_to_gguf.py ../merged-r15d --outfile ../mmproj-qwen3.5-0.8b-r15d-f16.gguf --outtype f16 --mmproj
+          cd ..
+          ls -lh qwen3.5-0.8b-r15d-f16.gguf mmproj-qwen3.5-0.8b-r15d-f16.gguf
+
+      - name: Run bench (21 unseen images, leg D F16, combo flags)
+        run: |
+          python3 bench/llama_r15d_fp16.py --manifest assets/r15d-21/manifest.json --image-dir assets --runtime llama-r15d-fp16-21 --output results-llama-r15d-fp16-21.json
+          ls -lh results-llama-r15d-fp16-21.json
+
+      - name: Run bench (100 images, leg D F16, combo flags)
+        run: |
+          python3 bench/llama_r15d_fp16.py --manifest assets/r14c-100/manifest.json --image-dir assets/r14c-100 --runtime llama-r15d-fp16-100 --output results-llama-r15d-fp16-100.json
+          ls -lh results-llama-r15d-fp16-100.json
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-llama-r15d-fp16
+          path: |
+            results-llama-r15d-fp16-21.json
+            results-llama-r15d-fp16-100.json
+            runner-info.txt
+            llama-server-*.log
+          if-no-files-found: warn

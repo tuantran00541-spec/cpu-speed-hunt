@@ -1,0 +1,27 @@
+{
+  "images": [
+    "img1_tmpt_ch155.png",
+    "img2_tmpt_ch136.png",
+    "img3_romcom.png",
+    "fp16_01.png",
+    "fp16_02.png",
+    "fp16_03.png",
+    "fp16_04.png",
+    "fp16_05.png",
+    "fp16_06.png",
+    "fp16_07.png",
+    "fp16_08.png",
+    "fp16_09.png",
+    "fp16_10.png",
+    "fp16_11.png",
+    "fp16_12.png",
+    "fp16_13.png",
+    "fp16_14.png",
+    "fp16_15.png",
+    "fp16_16.png",
+    "fp16_17.png",
+    "fp16_18.png"
+  ],
+  "seed": "r15d-21 (3 standard hunt images + 18 unseen TMPT hard-test crops, same set as the FP16-vs-Q4 check)",
+  "source": "assets/ (3 standard) + assets/fp16_01..18.png; EN + trusted VI in results-fp16/reference.json (18) and FINAL-REPORT.md (3 standard)"
+}
